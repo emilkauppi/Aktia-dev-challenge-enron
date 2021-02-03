@@ -3,6 +3,24 @@ import os
 import pandas as pd
 import io
 
+# Handling script arguments
+if len(sys.argv) > 1:
+    if sys.arg[1] == "D":
+        url = "https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tar.gz"
+        wget.download(url)
+    # If the .tar file is not extracted -> extracts locally, results in maildir folder
+    if not os.path.exists("./maildir"):
+        if os.path.exists("./enron_mail_20150507.tar.gz"):
+            file = tarfile.open("enron_mail_20150507.tar")
+            file.extractall("./")
+            file.close()
+        if os.path.exists("./enron_mail_20150507.tar"):
+            file = tarfile.open("enron_mail_20150507.tar")
+            file.extractall("./")
+            file.close()
+    else:
+        print("There required files are not in place!")
+
 # initialize lists for employee names and timestamps for mails
 employee_names = []
 employee_timestamps = []
@@ -40,6 +58,17 @@ for sender_folder in os.listdir("./maildir/"):
 employee_inbox_times = pd.DataFrame({"employee": employee_names,
                                      "time": employee_timestamps})
 
-# create week day column
-employee_inbox_times["weekday"] = [i.split(",")[0] for i in employee_inbox_times["time"]]
+# preprocessing done to get time into datetime format
+employee_inbox_times["date"] = [i[0:16] for i in employee_inbox_times["time"]] # transform initial timestamp to date friendly format
+employee_inbox_times["date"] = pd.to_datetime(employee_inbox_times["date"], errors="coerce") # transform into datetime
+employee_inbox_times = employee_inbox_times.dropna() # drop NaN values, just in case, would need debugging
+employee_inbox_times["day_of_week"] = employee_inbox_times["date"].dt.dayofweek # create day_of_week column
 
+# aggregate by first computing email for each day, per employee and then average out of those per day of week
+emails_count_per_day = pd.DataFrame(employee_inbox_times.groupby(by=["employee", "date"]).size()).reset_index() # emails per day per employee
+emails_count_per_day["day_of_week"] = emails_count_per_day["date"].dt.dayofweek
+email_averages = emails_count_per_day.groupby(by=["employee","day_of_week"]).mean() # mean of the amounts
+
+
+# write .csv
+email_averages.to_csv("./emails_sent_average_per_weekday.csv")

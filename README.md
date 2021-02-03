@@ -23,5 +23,9 @@ Similarily, for the second task
 
 `python3 task2.py`
 
-These will output the wanted .csv files to the working directory. 
+These will output the wanted .csv files to the working directory. If the data set is required to download then a download option needs to be inserted
+
+`python3 task1.py D` or `python3 task2.py D`. The script checks then for "maildir" folder and extracts from the downloaded data set file, if not found. 
+
+Also, this git includes the latest .csv files for both tasks. 
 
