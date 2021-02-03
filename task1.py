@@ -2,24 +2,34 @@ import wget
 import os
 import pandas as pd
 import sys
+import tarfile
 
 # handling script arguments
 if len(sys.argv) > 1:
-    if sys.arg[1] == "D":
+    if sys.argv[1] == "D":
         url = "https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tar.gz"
         wget.download(url)
+        print("Dataset downloaded!")
 # If the .tar file is not extracted -> extracts locally, results in maildir folder
 if not os.path.exists("./maildir"):
     if os.path.exists("./enron_mail_20150507.tar.gz"):
-        file = tarfile.open("enron_mail_20150507.tar")
+        file = tarfile.open("enron_mail_20150507.tar.gz")
+        print("Extracting dataset!")
         file.extractall("./")
         file.close()
+        print("Dataset extracted!")
     if os.path.exists("./enron_mail_20150507.tar"): # if no .gz
         file = tarfile.open("enron_mail_20150507.tar")
+        print("Extracting dataset!")
         file.extractall("./")
         file.close()
-    else:
-        print("There required files are not in place!")
+        print("Dataset extracted!")
+
+
+# warn if file does not exist
+if not os.path.exists("./maildir"):
+    print("maildir folder is lacking!")
+
 
 # Initialize global lists which will be used to build the data set of emails
 
