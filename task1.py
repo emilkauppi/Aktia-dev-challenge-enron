@@ -8,16 +8,16 @@ if len(sys.argv) > 1:
     if sys.arg[1] == "D":
         url = "https://www.cs.cmu.edu/~./enron/enron_mail_20150507.tar.gz"
         wget.download(url)
-    # If the .tar file is not extracted -> extracts locally, results in maildir folder
-    if not os.path.exists("./maildir"):
-        if os.path.exists("./enron_mail_20150507.tar.gz"):
-            file = tarfile.open("enron_mail_20150507.tar")
-            file.extractall("./")
-            file.close()
-        if os.path.exists("./enron_mail_20150507.tar"):
-            file = tarfile.open("enron_mail_20150507.tar")
-            file.extractall("./")
-            file.close()
+# If the .tar file is not extracted -> extracts locally, results in maildir folder
+if not os.path.exists("./maildir"):
+    if os.path.exists("./enron_mail_20150507.tar.gz"):
+        file = tarfile.open("enron_mail_20150507.tar")
+        file.extractall("./")
+        file.close()
+    if os.path.exists("./enron_mail_20150507.tar"): # if no .gz
+        file = tarfile.open("enron_mail_20150507.tar")
+        file.extractall("./")
+        file.close()
     else:
         print("There required files are not in place!")
 
@@ -120,8 +120,8 @@ for sender_folder in os.listdir("./maildir/"):
     sent_mail_folder(os.path.join("./maildir/", sender_folder))
 
 # create dataframes for sender and recipient data
-sender_df = pd.DataFrame({"id": sender_paths, "senders": sender_senders, "time": sender_timestamps})
-recipient_df = pd.DataFrame({"id": recipients_paths, "recipients": recipients, "time": recipients_timestamps})
+sender_df = pd.DataFrame({"id": sender_paths, "sender": sender_senders, "time": sender_timestamps})
+recipient_df = pd.DataFrame({"id": recipients_paths, "recipient": recipients, "time": recipients_timestamps})
 
 # FIRST TASK 1)
 
@@ -129,10 +129,12 @@ recipient_df = pd.DataFrame({"id": recipients_paths, "recipients": recipients, "
 merged_df = pd.merge(recipient_df, sender_df, how="left", on="id")
 
 # aggregate and obtain mail counts for each sender-recipient pair
-mail_counts = merged_df.groupby(by=["recipients", "senders"]).size()
+mail_counts = merged_df.groupby(by=["recipient", "sender"]).size()
 
 # convert to DataFrame and write to csv
 grouped = pd.DataFrame({"count": mail_counts}).reset_index()
-grouped = grouped[["senders", "recipients", "count"]]
+grouped = grouped[["sender", "recipient", "count"]]
+
 grouped.to_csv("./emails_sent_totals.csv")
+print("emails_sent_totals.csv created!")
 
